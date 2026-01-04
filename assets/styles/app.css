@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* ===== Font LED 7 Segments DeLorean ===== */
+@font-face {
+  font-family: 'LED7Segment';
+  src: url('../fonts/DSEG7Classic-Bold.woff2') format('woff2'),
+       url('../fonts/DSEG7Classic-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ===== shadcn/ui Design Tokens ===== */
 @layer theme {
   :root {
@@ -98,8 +108,8 @@
   .card {
     border-radius: var(--radius);
     border: 1px solid hsl(var(--border));
-    background-color: hsl(var(--card));
-    color: hsl(var(--card-foreground));
+    background-color: #000000;
+    color: #ffffff;
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   }
 
@@ -373,5 +383,190 @@
   .alert-description {
     font-size: 0.875rem;
     line-height: 1.625;
+  }
+
+  /* ===== DeLorean LED Font ===== */
+  .font-led {
+    font-family: 'LED7Segment', 'Courier New', monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ===== DeLorean Panneaux Métalliques ===== */
+  .bg-brushed-metal {
+    background: linear-gradient(135deg, #C0C0C0 0%, #909090 50%, #C0C0C0 100%);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.5);
+    border: 2px solid #666;
+    border-radius: 0.5rem;
+  }
+
+  /* Labels Temporels DeLorean */
+  .label-destination {
+    background: #dc2626;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  .label-present {
+    background: #16a34a;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  .label-departed {
+    background: #f59e0b;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* LED Box - fond noir pour chiffres */
+  .led-box {
+    background: #000;
+    padding: 1.5rem 1rem;
+    border-radius: 0.375rem;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (min-width: 768px) {
+    .led-box {
+      min-height: 120px;
+      padding: 2rem 1.5rem;
+    }
+  }
+
+  /* LED Colors avec glow prononcé */
+  .led-red {
+    color: #FF3333;
+    text-shadow:
+      0 0 5px #FF0000,
+      0 0 10px #FF0000,
+      0 0 20px #FF0000,
+      0 0 30px #FF0000,
+      0 0 40px rgba(255, 0, 0, 0.8),
+      0 0 60px rgba(255, 0, 0, 0.5);
+    animation: ledFlickerRed 4s infinite;
+  }
+
+  .led-green {
+    color: #33FF33;
+    text-shadow:
+      0 0 5px #00FF00,
+      0 0 10px #00FF00,
+      0 0 20px #00FF00,
+      0 0 30px #00FF00,
+      0 0 40px rgba(0, 255, 0, 0.8),
+      0 0 60px rgba(0, 255, 0, 0.5);
+    animation: ledFlickerGreen 4s infinite;
+  }
+
+  .led-yellow {
+    color: #FFB800;
+    text-shadow:
+      0 0 5px #FFB800,
+      0 0 10px #FFB800,
+      0 0 20px #FFB800,
+      0 0 30px #FFB800,
+      0 0 40px rgba(255, 184, 0, 0.6);
+  }
+
+  /* Animations scintillement LED */
+  @keyframes ledFlickerRed {
+    0%, 100% {
+      opacity: 1;
+      text-shadow:
+        0 0 5px #FF0000,
+        0 0 10px #FF0000,
+        0 0 20px #FF0000,
+        0 0 30px #FF0000,
+        0 0 40px rgba(255, 0, 0, 0.8),
+        0 0 60px rgba(255, 0, 0, 0.5);
+    }
+    50% {
+      opacity: 0.95;
+      text-shadow:
+        0 0 5px #FF0000,
+        0 0 10px #FF0000,
+        0 0 20px #FF0000,
+        0 0 30px #FF0000,
+        0 0 35px rgba(255, 0, 0, 0.6),
+        0 0 50px rgba(255, 0, 0, 0.4);
+    }
+  }
+
+  @keyframes ledFlickerGreen {
+    0%, 100% {
+      opacity: 1;
+      text-shadow:
+        0 0 5px #00FF00,
+        0 0 10px #00FF00,
+        0 0 20px #00FF00,
+        0 0 30px #00FF00,
+        0 0 40px rgba(0, 255, 0, 0.8),
+        0 0 60px rgba(0, 255, 0, 0.5);
+    }
+    50% {
+      opacity: 0.95;
+      text-shadow:
+        0 0 5px #00FF00,
+        0 0 10px #00FF00,
+        0 0 20px #00FF00,
+        0 0 30px #00FF00,
+        0 0 35px rgba(0, 255, 0, 0.6),
+        0 0 50px rgba(0, 255, 0, 0.4);
+    }
+  }
+
+  /* Animation pulse pour countdown urgent (< 1h) */
+  @keyframes ledPulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+      text-shadow:
+        0 0 5px #FF0000,
+        0 0 10px #FF0000,
+        0 0 20px #FF0000,
+        0 0 30px #FF0000,
+        0 0 40px rgba(255, 0, 0, 0.8),
+        0 0 60px rgba(255, 0, 0, 0.5);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scale(1.05);
+      text-shadow:
+        0 0 8px #FF0000,
+        0 0 15px #FF0000,
+        0 0 25px #FF0000,
+        0 0 40px #FF0000,
+        0 0 50px rgba(255, 0, 0, 1),
+        0 0 80px rgba(255, 0, 0, 0.7);
+    }
+  }
+
+  .led-pulse {
+    animation: ledPulse 1.5s ease-in-out infinite !important;
   }
 }

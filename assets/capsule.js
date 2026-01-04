@@ -47,7 +47,7 @@ export default class CapsuleManager {
         if (this.currentState !== 'locked') return;
 
         const alertHtml = `
-            <div id="notification-alert" class="mb-4 backdrop-blur-lg bg-blue-500/10 border border-blue-400/30 rounded-lg p-4">
+            <div id="notification-alert" class="mb-4 bg-zinc-800/90 border border-yellow-500/50 rounded-lg p-4">
                 <div class="flex items-start gap-3">
                     <span class="text-2xl">🔔</span>
                     <div class="flex-1">
@@ -131,38 +131,39 @@ export default class CapsuleManager {
     renderCreateForm() {
         this.currentState = 'create';
         this.stopCountdown();
+        this.clearNotificationTimeouts(); // Clear notifications when creating new capsule
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple animate-fade-in-up">
+            <div class="card bg-brushed-metal animate-fade-in-up">
                 <div class="card-header">
-                    <h2 class="card-title text-white">Créer une capsule temporelle</h2>
-                    <p class="card-description text-blue-100">
+                    <h2 class="card-title text-black">Créer une capsule temporelle</h2>
+                    <p class="card-description text-zinc-700">
                         Écrivez un message qui sera déverrouillé à une date future
                     </p>
                 </div>
                 <div class="card-content">
                     <form id="capsule-form" class="space-y-4">
                         <div class="space-y-2">
-                            <label for="message" class="label text-white">
+                            <label for="message" class="label text-black font-bold">
                                 Votre message
                             </label>
                             <textarea
                                 id="message"
                                 name="message"
-                                class="textarea bg-white/5 border-white/20 text-white placeholder-blue-200 transition-colors duration-300"
+                                class="textarea bg-white border-zinc-400 text-black placeholder-zinc-500 transition-colors duration-300"
                                 placeholder="Écrivez votre message pour le futur..."
                                 rows="6"
                                 maxlength="5000"
                                 required
                             ></textarea>
                             <div class="flex justify-between text-xs">
-                                <span id="message-validation-status" class="text-blue-200"></span>
-                                <span id="char-count" class="text-green-400">0 / 5000 caractères</span>
+                                <span id="message-validation-status" class="text-zinc-700"></span>
+                                <span id="char-count" class="text-green-600 font-semibold">0 / 5000 caractères</span>
                             </div>
                         </div>
 
                         <div class="space-y-2">
-                            <label for="unlockDate" class="label text-white">
+                            <label for="unlockDate" class="label text-black font-bold">
                                 Date de déverrouillage
                             </label>
                             <div class="relative">
@@ -170,7 +171,7 @@ export default class CapsuleManager {
                                     type="datetime-local"
                                     id="unlockDate"
                                     name="unlockDate"
-                                    class="input bg-white/5 border-white/20 text-white transition-colors duration-300 pr-10"
+                                    class="input bg-white border-zinc-400 text-black transition-colors duration-300 pr-10"
                                     required
                                 />
                                 <span id="date-validation-icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-xl hidden"></span>
@@ -178,21 +179,21 @@ export default class CapsuleManager {
                             <p id="date-validation-message" class="text-sm hidden"></p>
 
                             <div class="grid grid-cols-2 gap-2 mt-2">
-                                <button type="button" data-quick-date="1d" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                                <button type="button" data-quick-date="1d" class="btn btn-outline btn-sm bg-zinc-700 border-zinc-600 text-white hover:bg-zinc-600">
                                     +1 jour
                                 </button>
-                                <button type="button" data-quick-date="1w" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                                <button type="button" data-quick-date="1w" class="btn btn-outline btn-sm bg-zinc-700 border-zinc-600 text-white hover:bg-zinc-600">
                                     +1 semaine
                                 </button>
-                                <button type="button" data-quick-date="1m" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                                <button type="button" data-quick-date="1m" class="btn btn-outline btn-sm bg-zinc-700 border-zinc-600 text-white hover:bg-zinc-600">
                                     +1 mois
                                 </button>
-                                <button type="button" data-quick-date="1y" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                                <button type="button" data-quick-date="1y" class="btn btn-outline btn-sm bg-zinc-700 border-zinc-600 text-white hover:bg-zinc-600">
                                     +1 an
                                 </button>
                             </div>
 
-                            <p class="text-xs text-blue-200">
+                            <p class="text-xs text-zinc-700 font-medium">
                                 La capsule sera accessible à partir de cette date
                             </p>
                         </div>
@@ -201,7 +202,7 @@ export default class CapsuleManager {
 
                         <button
                             type="submit"
-                            class="btn btn-default btn-md w-full bg-blue-600 hover:bg-blue-700 text-white"
+                            class="btn btn-default btn-md w-full bg-yellow-600 hover:bg-yellow-500 text-black font-bold border-2 border-yellow-400"
                         >
                             🔒 Créer la capsule
                         </button>
@@ -214,6 +215,49 @@ export default class CapsuleManager {
     }
 
     /**
+     * Format date en format DeLorean (NOV 05 1955 02:51 AM)
+     */
+    formatDateDeLorean(date) {
+        const MOIS_FR = ['JAN', 'FEV', 'MAR', 'AVR', 'MAI', 'JUN', 'JUL', 'AOU', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+        const d = new Date(date);
+        const mois = MOIS_FR[d.getMonth()].toUpperCase(); // Force majuscules
+        const jour = String(d.getDate()).padStart(2, '0');
+        const annee = d.getFullYear();
+        const heure = String(d.getHours()).padStart(2, '0'); // Format 24h
+        const min = String(d.getMinutes()).padStart(2, '0');
+        const sec = String(d.getSeconds()).padStart(2, '0');
+
+        return {
+            mois,
+            jour,
+            annee,
+            heure,
+            min,
+            sec
+        };
+    }
+
+    /**
+     * Format countdown en format DeLorean (6J 12H 56M 22S)
+     */
+    formatCountdownDeLorean(milliseconds) {
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const days = Math.floor(totalSeconds / (24 * 60 * 60));
+        const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+        const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+        const seconds = totalSeconds % 60;
+
+        return {
+            jours: String(days).padStart(2, '0'),
+            heures: String(hours).padStart(2, '0'),
+            minutes: String(minutes).padStart(2, '0'),
+            secondes: String(seconds).padStart(2, '0'),
+            isUrgent: milliseconds < 60 * 60 * 1000 // Moins de 1 heure
+        };
+    }
+
+    /**
      * Render locked capsule with countdown (state: 403)
      */
     renderLockedCapsule(data) {
@@ -222,56 +266,115 @@ export default class CapsuleManager {
 
         const unlockDate = new Date(data.unlockDate);
         const createdAt = data.createdAt ? new Date(data.createdAt) : null;
-        const formattedDate = this.formatDate(unlockDate);
+
+        // Format date DeLorean
+        const dateData = this.formatDateDeLorean(unlockDate);
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple animate-fade-in-up" data-unlock-date="${data.unlockDate}">
-                <div class="card-header">
-                    <div class="flex items-center justify-between">
-                        <h2 class="card-title text-white">Capsule verrouillée</h2>
-                        <span class="badge badge-secondary bg-yellow-500/20 text-yellow-200 border-yellow-400/30">
-                            🔒 Verrouillée
-                        </span>
-                    </div>
-                    <p class="card-description text-blue-100">
-                        Cette capsule sera déverrouillée le ${formattedDate}
-                    </p>
+            <div class="bg-brushed-metal p-6 animate-fade-in-up max-w-4xl mx-auto" data-unlock-date="${data.unlockDate}">
+                <!-- Label HEURE DE DESTINATION -->
+                <div class="text-center mb-4">
+                    <span class="label-destination inline-block">HEURE DE DESTINATION</span>
                 </div>
-                <div class="card-content">
-                    <div class="alert bg-blue-500/10 border-blue-400/30">
-                        <div class="alert-title text-white flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Temps restant
+
+                <!-- Première ligne : JOUR | MOIS | ANNÉE -->
+                <div class="grid grid-cols-3 gap-3 md:gap-6 mb-4">
+                    <!-- JOUR -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-destination inline-block text-xs">JOUR</span>
                         </div>
-                        <div id="countdown" class="text-3xl font-bold text-white mt-4 font-mono transition-all duration-300">
-                            Calcul...
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-red">${dateData.jour}</div>
                         </div>
-                        <div id="exact-date" class="text-sm text-white/60 mt-2 hidden transition-opacity duration-300">
-                        </div>
-                        ${createdAt ? `
-                        <div class="mt-4">
-                            <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                                <div id="progress-bar" class="h-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
-                            </div>
-                            <p class="text-xs text-blue-200 mt-2 text-center">
-                                <span id="progress-text">0%</span> du temps écoulé
-                            </p>
-                        </div>
-                        ` : ''}
                     </div>
 
-                    <div class="mt-6 p-4 rounded-lg bg-white/5 border border-white/10">
-                        <p class="text-sm text-blue-200">
-                            💡 La capsule se déverrouillera automatiquement et vous pourrez lire votre message.
-                        </p>
+                    <!-- MOIS -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-destination inline-block text-xs">MOIS</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-red">${dateData.mois}</div>
+                        </div>
+                    </div>
+
+                    <!-- ANNÉE -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-destination inline-block text-xs">ANNEE</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-red">${dateData.annee}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="card-footer">
+
+                <!-- Deuxième ligne : HEURE | MIN | SEC -->
+                <div class="grid grid-cols-3 gap-3 md:gap-6 mb-6">
+                    <!-- HEURE -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-destination inline-block text-xs">HEURE</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-red">${dateData.heure}</div>
+                        </div>
+                    </div>
+
+                    <!-- MIN -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-destination inline-block text-xs">MIN</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-red">${dateData.min}</div>
+                        </div>
+                    </div>
+
+                    <!-- SEC -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-destination inline-block text-xs">SEC</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-red" id="unlock-seconds">00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compte à rebours -->
+                <div class="mb-6">
+                    <div class="text-center mb-3">
+                        <span class="label-destination inline-block">TEMPS RESTANT</span>
+                    </div>
+                    <div id="countdown" class="text-center">
+                        <div class="grid grid-cols-4 gap-2 md:gap-4">
+                            <!-- Sera rempli dynamiquement par startCountdown -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barre de progression -->
+                ${createdAt ? `
+                <div class="mb-6">
+                    <div class="text-center mb-2">
+                        <span class="label-departed inline-block text-xs">PROGRESSION TEMPORELLE</span>
+                    </div>
+                    <div class="w-full bg-black/80 rounded p-1">
+                        <div id="progress-bar" class="h-2 transition-all duration-500 rounded" style="width: 0%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+                    </div>
+                    <p class="text-xs text-white/60 mt-2 text-center">
+                        <span id="progress-text">0%</span> du temps écoulé
+                    </p>
+                </div>
+                ` : ''}
+
+                <!-- Bouton Supprimer -->
+                <div class="text-center">
                     <button
                         id="delete-capsule-btn"
-                        class="btn btn-outline btn-sm bg-red-500/10 border-red-400/30 text-red-300 hover:bg-red-500/20"
+                        class="btn btn-outline btn-sm bg-red-600 border-red-500 text-white font-bold hover:bg-red-700"
                     >
                         🗑️ Supprimer la capsule
                     </button>
@@ -301,47 +404,114 @@ export default class CapsuleManager {
     renderUnlockedCapsule(data) {
         this.currentState = 'unlocked';
         this.stopCountdown();
+        this.clearNotificationTimeouts(); // Clear notifications when capsule is unlocked
 
         const createdDate = new Date(data.createdAt);
         const unlockedDate = new Date(data.unlockDate);
+
+        // Format dates DeLorean
+        const unlockDateData = this.formatDateDeLorean(unlockedDate);
 
         // Trigger confetti celebration!
         this.triggerConfetti();
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple animate-fade-in-up">
-                <div class="card-header">
-                    <div class="flex items-center justify-between">
-                        <h2 class="card-title text-white">Capsule déverrouillée</h2>
-                        <span class="badge badge-default bg-green-500/20 text-green-200 border-green-400/30">
-                            ✅ Déverrouillée
-                        </span>
-                    </div>
-                    <p class="card-description text-blue-100">
-                        Créée le ${this.formatDate(createdDate)} • Déverrouillée le ${this.formatDate(unlockedDate)}
-                    </p>
+            <div class="bg-brushed-metal p-6 animate-fade-in-up max-w-4xl mx-auto">
+                <!-- Label HEURE PRESENTE -->
+                <div class="text-center mb-4">
+                    <span class="label-present inline-block">HEURE PRESENTE</span>
                 </div>
-                <div class="card-content">
-                    <div class="alert bg-green-500/10 border-green-400/30 mb-4">
-                        <div class="alert-title text-white">
-                            🎉 Votre message du passé
+
+                <!-- Première ligne : JOUR | MOIS | ANNÉE -->
+                <div class="grid grid-cols-3 gap-3 md:gap-6 mb-4">
+                    <!-- JOUR -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-present inline-block text-xs">JOUR</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.jour}</div>
                         </div>
                     </div>
 
-                    <div class="p-6 rounded-lg bg-white/5 border border-white/10">
-                        <p class="text-white text-lg leading-relaxed whitespace-pre-wrap">${this.escapeHtml(data.message)}</p>
+                    <!-- MOIS -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-present inline-block text-xs">MOIS</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.mois}</div>
+                        </div>
+                    </div>
+
+                    <!-- ANNÉE -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-present inline-block text-xs">ANNEE</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.annee}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="card-footer flex gap-2">
+
+                <!-- Deuxième ligne : HEURE | MIN | SEC -->
+                <div class="grid grid-cols-3 gap-3 md:gap-6 mb-6">
+                    <!-- HEURE -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-present inline-block text-xs">HEURE</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.heure}</div>
+                        </div>
+                    </div>
+
+                    <!-- MIN -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-present inline-block text-xs">MIN</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.min}</div>
+                        </div>
+                    </div>
+
+                    <!-- SEC -->
+                    <div>
+                        <div class="text-center mb-2">
+                            <span class="label-present inline-block text-xs">SEC</span>
+                        </div>
+                        <div class="led-box">
+                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.sec}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message du passé -->
+                <div class="mb-6">
+                    <div class="text-center mb-3">
+                        <span class="label-present inline-block">MESSAGE DU PASSÉ</span>
+                    </div>
+                    <div class="p-6 rounded-lg bg-black/90 border-2 border-green-500/30">
+                        <p class="text-white text-lg leading-relaxed whitespace-pre-wrap">${this.escapeHtml(data.message)}</p>
+                    </div>
+                    <p class="text-xs text-white/60 mt-2 text-center">
+                        Créée le ${this.formatDate(createdDate)}
+                    </p>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
                     <button
                         id="copy-message-btn"
-                        class="btn btn-outline btn-md bg-white/5 border-white/20 text-white hover:bg-white/10"
+                        class="btn btn-outline btn-md bg-green-600 border-green-500 text-white font-bold hover:bg-green-700"
                     >
                         📋 Copier le message
                     </button>
                     <button
                         id="create-new-btn"
-                        class="btn btn-outline btn-md bg-white/5 border-white/20 text-white hover:bg-white/10"
+                        class="btn btn-outline btn-md bg-yellow-600 border-yellow-500 text-black font-bold hover:bg-yellow-500"
                     >
                         ➕ Créer une nouvelle capsule
                     </button>
@@ -416,7 +586,7 @@ export default class CapsuleManager {
         this.stopCountdown();
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple">
+            <div class="card bg-brushed-metal">
                 <div class="card-content">
                     <div class="alert alert-destructive bg-red-500/10 border-red-400/30">
                         <div class="alert-title text-red-200 flex items-center gap-2">
@@ -771,44 +941,70 @@ export default class CapsuleManager {
                 return;
             }
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            const countdownData = this.formatCountdownSmart(days, hours, minutes, seconds);
+            // Format countdown avec DeLorean
+            const countdownData = this.formatCountdownDeLorean(diff);
             const countdownEl = document.getElementById('countdown');
-            const exactDateEl = document.getElementById('exact-date');
 
             if (countdownEl) {
-                // Fade out, update, fade in for smooth transition
-                const oldText = countdownEl.textContent;
-                if (oldText !== countdownData.text) {
-                    countdownEl.style.opacity = '0';
-                    setTimeout(() => {
-                        countdownEl.textContent = countdownData.text;
-                        countdownEl.className = `text-3xl font-bold mt-4 font-mono transition-all duration-300 ${countdownData.color}`;
-                        countdownEl.style.opacity = '1';
-                    }, 150);
-                } else {
-                    countdownEl.textContent = countdownData.text;
-                    countdownEl.className = `text-3xl font-bold mt-4 font-mono transition-all duration-300 ${countdownData.color}`;
-                }
-            }
+                // Déterminer la classe LED (red avec pulse si < 1h)
+                const ledClass = countdownData.isUrgent ? 'led-red led-pulse' : 'led-red';
 
-            // Show/hide exact date
-            if (exactDateEl) {
-                if (countdownData.showExactDate) {
-                    exactDateEl.textContent = this.formatExactDate(unlockDate);
-                    exactDateEl.classList.remove('hidden');
-                } else {
-                    exactDateEl.classList.add('hidden');
-                }
+                // Générer le HTML des LED boxes
+                countdownEl.innerHTML = `
+                    <div class="grid grid-cols-4 gap-2 md:gap-4">
+                        <!-- JOURS -->
+                        <div>
+                            <div class="text-center mb-2">
+                                <span class="label-destination inline-block text-xs">J</span>
+                            </div>
+                            <div class="led-box">
+                                <div class="text-2xl md:text-4xl font-led ${ledClass}">${countdownData.jours}</div>
+                            </div>
+                        </div>
+
+                        <!-- HEURES -->
+                        <div>
+                            <div class="text-center mb-2">
+                                <span class="label-destination inline-block text-xs">H</span>
+                            </div>
+                            <div class="led-box">
+                                <div class="text-2xl md:text-4xl font-led ${ledClass}">${countdownData.heures}</div>
+                            </div>
+                        </div>
+
+                        <!-- MINUTES -->
+                        <div>
+                            <div class="text-center mb-2">
+                                <span class="label-destination inline-block text-xs">M</span>
+                            </div>
+                            <div class="led-box">
+                                <div class="text-2xl md:text-4xl font-led ${ledClass}">${countdownData.minutes}</div>
+                            </div>
+                        </div>
+
+                        <!-- SECONDES -->
+                        <div>
+                            <div class="text-center mb-2">
+                                <span class="label-destination inline-block text-xs">S</span>
+                            </div>
+                            <div class="led-box">
+                                <div class="text-2xl md:text-4xl font-led ${ledClass}">${countdownData.secondes}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
 
             // Update progress bar if createdAt is available
             if (createdAt) {
                 this.updateProgressBar(now, createdAt, unlockDate);
+            }
+
+            // Update live seconds in HEURE DE DESTINATION panel
+            const secondsEl = document.getElementById('unlock-seconds');
+            if (secondsEl) {
+                const unlockDateFormatted = this.formatDateDeLorean(unlockDate);
+                secondsEl.textContent = unlockDateFormatted.sec;
             }
         };
 
@@ -1010,6 +1206,9 @@ export default class CapsuleManager {
         if (!confirmed) {
             return;
         }
+
+        // CRITICAL FIX: Clear all scheduled notifications BEFORE deletion
+        this.clearNotificationTimeouts();
 
         try {
             // Delete via API (DELETE method)
