@@ -355,17 +355,19 @@ export default class CapsuleManager {
                     </div>
                 </div>
 
-                <!-- Barre de progression -->
+                <!-- Barre de progression circuit imprimé -->
                 ${createdAt ? `
                 <div class="mb-6">
-                    <div class="text-center mb-2">
-                        <span class="label-departed inline-block text-xs">PROGRESSION TEMPORELLE</span>
+                    <div class="text-center mb-3">
+                        <span class="label-departed inline-block">PROGRESSION TEMPORELLE</span>
                     </div>
-                    <div class="w-full bg-black/80 rounded p-1">
-                        <div id="progress-bar" class="h-2 transition-all duration-500 rounded" style="width: 0%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+                    <div class="progress-circuit w-full">
+                        <div id="progress-bar" class="flex gap-2 w-full">
+                            <!-- Segments générés dynamiquement par updateProgressBar() -->
+                        </div>
                     </div>
-                    <p class="text-xs text-white/60 mt-2 text-center">
-                        <span id="progress-text">0%</span> du temps écoulé
+                    <p class="text-xs text-yellow-400/80 mt-2 text-center font-bold">
+                        <span id="progress-text">0%</span> DU TEMPS ECOULE
                     </p>
                 </div>
                 ` : ''}
@@ -1121,36 +1123,40 @@ export default class CapsuleManager {
     }
 
     /**
-     * Update progress bar with dynamic colors
+     * Update progress bar with circuit imprimé segments style
      */
     updateProgressBar(now, createdAt, unlockDate) {
         const progressBar = document.getElementById('progress-bar');
         const progressText = document.getElementById('progress-text');
 
-        if (!progressBar || !progressText) return;
+        if (!progressBar || !progressText) {
+            console.error('Progress bar elements not found:', { progressBar, progressText });
+            return;
+        }
 
         // Calculate progress: (now - createdAt) / (unlockDate - createdAt) * 100
         const totalDuration = unlockDate - createdAt;
         const elapsed = now - createdAt;
         const progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
 
-        // Update width
-        progressBar.style.width = `${progress}%`;
-
         // Update text
         progressText.textContent = `${Math.round(progress)}%`;
 
-        // Dynamic colors based on progress
-        if (progress < 33) {
-            // Green (early stage)
-            progressBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
-        } else if (progress < 66) {
-            // Yellow/Orange (middle stage)
-            progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
-        } else {
-            // Red (final stage)
-            progressBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
-        }
+        // Determine number of segments based on screen width (responsive)
+        const isMobile = window.innerWidth < 768;
+        const totalSegments = isMobile ? 10 : 20;
+
+        // Generate segments HTML
+        const segments = Array.from({length: totalSegments}, (_, i) => {
+            const segmentThreshold = (i / totalSegments) * 100;
+            const filled = progress >= segmentThreshold;
+            return `<div class="progress-segment ${filled ? 'filled' : ''}"></div>`;
+        }).join('');
+
+        // Update progress bar HTML with circuit imprimé style
+        progressBar.innerHTML = segments;
+
+        console.log('Progress bar updated:', { progress, totalSegments, segments: progressBar.children.length });
     }
 
     /**
