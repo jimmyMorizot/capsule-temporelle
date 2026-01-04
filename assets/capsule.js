@@ -236,7 +236,13 @@ export default class CapsuleManager {
                         <p class="text-white text-lg leading-relaxed whitespace-pre-wrap">${this.escapeHtml(data.message)}</p>
                     </div>
                 </div>
-                <div class="card-footer">
+                <div class="card-footer flex gap-2">
+                    <button
+                        id="copy-message-btn"
+                        class="btn btn-outline btn-md bg-white/5 border-white/20 text-white hover:bg-white/10"
+                    >
+                        📋 Copier le message
+                    </button>
                     <button
                         id="create-new-btn"
                         class="btn btn-outline btn-md bg-white/5 border-white/20 text-white hover:bg-white/10"
@@ -246,6 +252,27 @@ export default class CapsuleManager {
                 </div>
             </div>
         `;
+
+        // Event listener for copying message
+        document.getElementById('copy-message-btn')?.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(data.message);
+
+                // Visual feedback: change button text temporarily
+                const btn = document.getElementById('copy-message-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copié !';
+                btn.classList.add('bg-green-500/20', 'border-green-400/30');
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-green-500/20', 'border-green-400/30');
+                }, 2000);
+            } catch (error) {
+                console.error('Failed to copy:', error);
+                alert('Impossible de copier le message');
+            }
+        });
 
         // Event listener for creating new capsule
         document.getElementById('create-new-btn')?.addEventListener('click', () => {
