@@ -399,7 +399,7 @@ export default class CapsuleManager {
             if (countdownEl) {
                 countdownEl.textContent = newCountdown;
 
-                // Add subtle red color if less than 1 hour (no animation)
+                // Add red color if less than 1 hour (no animation at all)
                 const totalMinutes = hours * 60 + minutes;
                 if (totalMinutes < 60 && days === 0) {
                     countdownEl.style.color = '#ef4444'; // red-500

@@ -79,41 +79,8 @@
     }
   }
 
-  @keyframes pulseRed {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
-
-  @keyframes numberChange {
-    0% {
-      transform: scale(1);
-      color: inherit;
-    }
-    50% {
-      transform: scale(1.1);
-      color: hsl(var(--primary));
-    }
-    100% {
-      transform: scale(1);
-      color: inherit;
-    }
-  }
-
   .animate-fade-in-up {
     animation: fadeInUp 600ms ease-out;
-  }
-
-  .animate-pulse-red {
-    animation: pulseRed 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    color: #ef4444; /* red-500 */
-  }
-
-  .animate-number-change {
-    animation: numberChange 300ms ease-out;
   }
 }
 
