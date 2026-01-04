@@ -153,6 +153,7 @@
   .btn-outline {
     border: 1px solid hsl(var(--input));
     background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 
   .btn-outline:hover:not(:disabled) {

@@ -207,7 +207,7 @@ export default class CapsuleManager {
                 <div class="card-footer">
                     <button
                         id="create-new-btn"
-                        class="btn btn-outline btn-md border-white/20 text-white hover:bg-white/10"
+                        class="btn btn-outline btn-md bg-white/5 border-white/20 text-white hover:bg-white/10"
                     >
                         ➕ Créer une nouvelle capsule
                     </button>
