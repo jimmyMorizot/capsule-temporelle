@@ -3,6 +3,8 @@
  * Gère les états dynamiques et l'interaction avec l'API REST
  */
 
+import confetti from 'canvas-confetti';
+
 export default class CapsuleManager {
     constructor() {
         this.container = document.getElementById('capsule-container');
@@ -63,7 +65,7 @@ export default class CapsuleManager {
         this.stopCountdown();
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-lg bg-white/10 border-white/20">
+            <div class="card backdrop-blur-lg bg-white/10 border-white/20 animate-fade-in-up">
                 <div class="card-header">
                     <h2 class="card-title text-white">Créer une capsule temporelle</h2>
                     <p class="card-description text-blue-100">
@@ -133,7 +135,7 @@ export default class CapsuleManager {
         const formattedDate = this.formatDate(unlockDate);
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-lg bg-white/10 border-white/20">
+            <div class="card backdrop-blur-lg bg-white/10 border-white/20 animate-fade-in-up">
                 <div class="card-header">
                     <div class="flex items-center justify-between">
                         <h2 class="card-title text-white">Capsule verrouillée</h2>
@@ -180,8 +182,11 @@ export default class CapsuleManager {
         const createdDate = new Date(data.createdAt);
         const unlockedDate = new Date(data.unlockDate);
 
+        // Trigger confetti celebration!
+        this.triggerConfetti();
+
         this.container.innerHTML = `
-            <div class="card backdrop-blur-lg bg-white/10 border-white/20">
+            <div class="card backdrop-blur-lg bg-white/10 border-white/20 animate-fade-in-up">
                 <div class="card-header">
                     <div class="flex items-center justify-between">
                         <h2 class="card-title text-white">Capsule déverrouillée</h2>
@@ -388,9 +393,19 @@ export default class CapsuleManager {
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
+            const newCountdown = `${days}j ${hours}h ${minutes}m ${seconds}s`;
             const countdownEl = document.getElementById('countdown');
+
             if (countdownEl) {
-                countdownEl.textContent = `${days}j ${hours}h ${minutes}m ${seconds}s`;
+                countdownEl.textContent = newCountdown;
+
+                // Add subtle red color if less than 1 hour (no animation)
+                const totalMinutes = hours * 60 + minutes;
+                if (totalMinutes < 60 && days === 0) {
+                    countdownEl.style.color = '#ef4444'; // red-500
+                } else {
+                    countdownEl.style.color = ''; // reset to default
+                }
             }
         };
 
@@ -444,6 +459,37 @@ export default class CapsuleManager {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    /**
+     * Trigger confetti celebration animation
+     */
+    triggerConfetti() {
+        const duration = 3000; // 3 seconds
+        const end = Date.now() + duration;
+
+        const colors = ['#a855f7', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
+
+        (function frame() {
+            confetti({
+                particleCount: 3,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: colors
+            });
+            confetti({
+                particleCount: 3,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: colors
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
     }
 }
 
