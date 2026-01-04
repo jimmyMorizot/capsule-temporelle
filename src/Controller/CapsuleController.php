@@ -103,6 +103,7 @@ final class CapsuleController extends AbstractController
                 'status' => 'locked',
                 'message' => sprintf('Capsule verrouillée. Déverrouillage dans %s', $remainingTime),
                 'unlockDate' => $capsule['unlockDate'],
+                'createdAt' => $capsule['createdAt'],
             ], Response::HTTP_FORBIDDEN);
         }
 

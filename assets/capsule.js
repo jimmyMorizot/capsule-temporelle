@@ -132,6 +132,7 @@ export default class CapsuleManager {
         this.stopCountdown();
 
         const unlockDate = new Date(data.unlockDate);
+        const createdAt = data.createdAt ? new Date(data.createdAt) : null;
         const formattedDate = this.formatDate(unlockDate);
 
         this.container.innerHTML = `
@@ -158,6 +159,16 @@ export default class CapsuleManager {
                         <div id="countdown" class="text-3xl font-bold text-white mt-4 font-mono">
                             Calcul...
                         </div>
+                        ${createdAt ? `
+                        <div class="mt-4">
+                            <div class="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                                <div id="progress-bar" class="h-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-blue-200 mt-2 text-center">
+                                <span id="progress-text">0%</span> du temps écoulé
+                            </p>
+                        </div>
+                        ` : ''}
                     </div>
 
                     <div class="mt-6 p-4 rounded-lg bg-white/5 border border-white/10">
@@ -169,7 +180,7 @@ export default class CapsuleManager {
             </div>
         `;
 
-        this.startCountdown(unlockDate);
+        this.startCountdown(unlockDate, createdAt);
     }
 
     /**
@@ -374,7 +385,7 @@ export default class CapsuleManager {
     /**
      * Start countdown timer
      */
-    startCountdown(unlockDate) {
+    startCountdown(unlockDate, createdAt = null) {
         this.stopCountdown(); // Clear any existing interval
 
         const updateCountdown = () => {
@@ -393,7 +404,7 @@ export default class CapsuleManager {
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            const newCountdown = `${days}j ${hours}h ${minutes}m ${seconds}s`;
+            const newCountdown = this.formatCountdownSmart(days, hours, minutes, seconds);
             const countdownEl = document.getElementById('countdown');
 
             if (countdownEl) {
@@ -406,6 +417,11 @@ export default class CapsuleManager {
                 } else {
                     countdownEl.style.color = ''; // reset to default
                 }
+            }
+
+            // Update progress bar if createdAt is available
+            if (createdAt) {
+                this.updateProgressBar(now, createdAt, unlockDate);
             }
         };
 
@@ -450,6 +466,62 @@ export default class CapsuleManager {
         const second = String(date.getSeconds()).padStart(2, '0');
 
         return `${year}-${month}-${day}T${hour}:${minute}:${second}${sign}${hours}:${minutes}`;
+    }
+
+    /**
+     * Format countdown with intelligent formatting based on time remaining
+     */
+    formatCountdownSmart(days, hours, minutes, seconds) {
+        // Less than 1 hour: show minutes and seconds
+        if (days === 0 && hours === 0) {
+            return `${minutes} minute${minutes > 1 ? 's' : ''} ${seconds} seconde${seconds > 1 ? 's' : ''}`;
+        }
+
+        // Less than 24 hours: show hours and minutes
+        if (days === 0) {
+            return `${hours} heure${hours > 1 ? 's' : ''} ${minutes} minute${minutes > 1 ? 's' : ''}`;
+        }
+
+        // More than 7 days: show days and hours only
+        if (days > 7) {
+            return `${days} jour${days > 1 ? 's' : ''} ${hours} heure${hours > 1 ? 's' : ''}`;
+        }
+
+        // Between 1-7 days: show all (compact format)
+        return `${days}j ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    /**
+     * Update progress bar with dynamic colors
+     */
+    updateProgressBar(now, createdAt, unlockDate) {
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+
+        if (!progressBar || !progressText) return;
+
+        // Calculate progress: (now - createdAt) / (unlockDate - createdAt) * 100
+        const totalDuration = unlockDate - createdAt;
+        const elapsed = now - createdAt;
+        const progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+
+        // Update width
+        progressBar.style.width = `${progress}%`;
+
+        // Update text
+        progressText.textContent = `${Math.round(progress)}%`;
+
+        // Dynamic colors based on progress
+        if (progress < 33) {
+            // Green (early stage)
+            progressBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+        } else if (progress < 66) {
+            // Yellow/Orange (middle stage)
+            progressBar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+        } else {
+            // Red (final stage)
+            progressBar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+        }
     }
 
     /**
