@@ -82,6 +82,14 @@
   .animate-fade-in-up {
     animation: fadeInUp 600ms ease-out;
   }
+
+  .shadow-purple {
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.3), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+
+  .hover\:rotate-360:hover {
+    transform: rotate(360deg);
+  }
 }
 
 /* ===== shadcn/ui Component Classes ===== */

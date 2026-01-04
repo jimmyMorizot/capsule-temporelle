@@ -65,7 +65,7 @@ export default class CapsuleManager {
         this.stopCountdown();
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-lg bg-white/10 border-white/20 animate-fade-in-up">
+            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple animate-fade-in-up">
                 <div class="card-header">
                     <h2 class="card-title text-white">Créer une capsule temporelle</h2>
                     <p class="card-description text-blue-100">
@@ -103,6 +103,22 @@ export default class CapsuleManager {
                                 class="input bg-white/5 border-white/20 text-white"
                                 required
                             />
+
+                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                <button type="button" data-quick-date="1d" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                                    +1 jour
+                                </button>
+                                <button type="button" data-quick-date="1w" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                                    +1 semaine
+                                </button>
+                                <button type="button" data-quick-date="1m" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                                    +1 mois
+                                </button>
+                                <button type="button" data-quick-date="1y" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
+                                    +1 an
+                                </button>
+                            </div>
+
                             <p class="text-xs text-blue-200">
                                 La capsule sera accessible à partir de cette date
                             </p>
@@ -136,7 +152,7 @@ export default class CapsuleManager {
         const formattedDate = this.formatDate(unlockDate);
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-lg bg-white/10 border-white/20 animate-fade-in-up">
+            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple animate-fade-in-up">
                 <div class="card-header">
                     <div class="flex items-center justify-between">
                         <h2 class="card-title text-white">Capsule verrouillée</h2>
@@ -197,7 +213,7 @@ export default class CapsuleManager {
         this.triggerConfetti();
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-lg bg-white/10 border-white/20 animate-fade-in-up">
+            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple animate-fade-in-up">
                 <div class="card-header">
                     <div class="flex items-center justify-between">
                         <h2 class="card-title text-white">Capsule déverrouillée</h2>
@@ -245,7 +261,7 @@ export default class CapsuleManager {
         this.stopCountdown();
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-lg bg-white/10 border-white/20">
+            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple">
                 <div class="card-content">
                     <div class="alert alert-destructive bg-red-500/10 border-red-400/30">
                         <div class="alert-title text-red-200 flex items-center gap-2">
@@ -277,10 +293,68 @@ export default class CapsuleManager {
         const messageInput = document.getElementById('message');
         const charCount = document.getElementById('char-count');
 
-        // Character counter
+        // Character counter with dynamic colors
         messageInput?.addEventListener('input', (e) => {
             const count = e.target.value.length;
             charCount.textContent = `${count} / 5000 caractères`;
+
+            // Dynamic color based on character count
+            if (count < 4000) {
+                charCount.className = 'text-xs text-green-400';
+            } else if (count < 4800) {
+                charCount.className = 'text-xs text-orange-400';
+            } else {
+                charCount.className = 'text-xs text-red-400';
+            }
+        });
+
+        // Quick date buttons
+        const quickDateButtons = document.querySelectorAll('[data-quick-date]');
+        const unlockDateInput = document.getElementById('unlockDate');
+        const submitButton = document.querySelector('#capsule-form button[type="submit"]');
+
+        quickDateButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const type = button.dataset.quickDate;
+                const now = new Date();
+
+                switch(type) {
+                    case '1d':
+                        now.setDate(now.getDate() + 1);
+                        break;
+                    case '1w':
+                        now.setDate(now.getDate() + 7);
+                        break;
+                    case '1m':
+                        now.setMonth(now.getMonth() + 1);
+                        break;
+                    case '1y':
+                        now.setFullYear(now.getFullYear() + 1);
+                        break;
+                }
+
+                // Format for datetime-local input (YYYY-MM-DDTHH:mm)
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+
+                unlockDateInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+                // Trigger validation after setting value
+                this.validateForm();
+            });
+        });
+
+        // Real-time validation on date change
+        unlockDateInput?.addEventListener('change', () => {
+            this.validateForm();
+        });
+
+        // Real-time validation on message change
+        messageInput?.addEventListener('input', () => {
+            this.validateForm();
         });
 
         // Form submission
@@ -288,6 +362,68 @@ export default class CapsuleManager {
             e.preventDefault();
             await this.submitCapsule(new FormData(form));
         });
+    }
+
+    /**
+     * Validate form in real-time and provide visual feedback
+     */
+    validateForm() {
+        const messageInput = document.getElementById('message');
+        const unlockDateInput = document.getElementById('unlockDate');
+        const submitButton = document.querySelector('#capsule-form button[type="submit"]');
+        const formError = document.getElementById('form-error');
+
+        let isValid = true;
+        let errorMessage = '';
+
+        // Validate message
+        const message = messageInput?.value.trim() || '';
+        if (message.length === 0) {
+            isValid = false;
+        }
+
+        // Validate date
+        if (unlockDateInput?.value) {
+            const selectedDate = new Date(unlockDateInput.value);
+            const now = new Date();
+
+            if (selectedDate <= now) {
+                isValid = false;
+                errorMessage = 'La date de déverrouillage doit être dans le futur';
+                unlockDateInput.classList.add('border-red-500');
+                unlockDateInput.classList.remove('border-white/20');
+            } else {
+                unlockDateInput.classList.remove('border-red-500');
+                unlockDateInput.classList.add('border-white/20');
+            }
+        } else {
+            isValid = false;
+        }
+
+        // Show/hide error message
+        if (errorMessage) {
+            formError.className = 'alert alert-destructive bg-red-500/10 border-red-400/30';
+            formError.innerHTML = `
+                <div class="alert-title text-red-200 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    ${errorMessage}
+                </div>
+            `;
+        } else {
+            formError.className = 'hidden';
+        }
+
+        // Enable/disable submit button
+        if (submitButton) {
+            submitButton.disabled = !isValid;
+            if (!isValid) {
+                submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
     }
 
     /**
