@@ -21,14 +21,22 @@
         <div class="w-full max-w-2xl">
             {# Header avec titre #}
             <div class="text-center mb-6">
-                <h1 class="text-5xl font-bold mb-2 tracking-wider text-yellow-400 flex items-center justify-center gap-4" style="font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 0.2em; text-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.3);">
-                    {# Condensateur de Flux - forme en Y caractéristique #}
+                <h1 class="text-5xl font-bold mb-2 tracking-wider text-yellow-400 flex items-center justify-center gap-2" style="font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 0.2em; text-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.3);">
+                    {# Condensateur de Flux - forme en Y avec tubes lumineux #}
                     <div class="flux-capacitor" id="flux-capacitor">
-                        <div class="flux-center"></div>
-                        <div class="flux-branch flux-branch-top"></div>
-                        <div class="flux-branch flux-branch-left"></div>
-                        <div class="flux-branch flux-branch-right"></div>
-                        <div class="flux-glow"></div>
+                        <div class="flux-frame">
+                            {# Ampoules rouges en haut #}
+                            <div class="flux-bulb flux-bulb-top-left"></div>
+                            <div class="flux-bulb flux-bulb-top-right"></div>
+                            {# Tubes lumineux en Y #}
+                            <div class="flux-tube flux-tube-left"></div>
+                            <div class="flux-tube flux-tube-right"></div>
+                            <div class="flux-tube flux-tube-bottom"></div>
+                            {# Centre du Y #}
+                            <div class="flux-center"></div>
+                            {# Ampoule rouge en bas #}
+                            <div class="flux-bulb flux-bulb-bottom"></div>
+                        </div>
                     </div>
                     CAPSULE TEMPORELLE
                 </h1>
