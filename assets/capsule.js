@@ -11,6 +11,8 @@ export default class CapsuleManager {
         this.apiUrl = '/api/capsule';
         this.countdownInterval = null;
         this.currentState = 'loading';
+        this.notificationTimeouts = []; // Store notification timeouts
+        this.notificationsSupported = 'Notification' in window;
     }
 
     /**
@@ -18,6 +20,72 @@ export default class CapsuleManager {
      */
     async init() {
         await this.checkCapsuleStatus();
+    }
+
+    /**
+     * Check and request notification permission
+     */
+    checkNotificationPermission() {
+        if (!this.notificationsSupported) return;
+
+        const preference = localStorage.getItem('notificationPreference');
+
+        // Don't ask again if user previously denied
+        if (preference === 'denied') return;
+
+        // Request permission if not already granted or denied
+        if (Notification.permission === 'default' && !preference) {
+            this.showNotificationPermissionAlert();
+        }
+    }
+
+    /**
+     * Show notification permission alert
+     */
+    showNotificationPermissionAlert() {
+        // Only show if we're in locked state (has a capsule waiting)
+        if (this.currentState !== 'locked') return;
+
+        const alertHtml = `
+            <div id="notification-alert" class="mb-4 backdrop-blur-lg bg-blue-500/10 border border-blue-400/30 rounded-lg p-4">
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl">🔔</span>
+                    <div class="flex-1">
+                        <h4 class="text-white font-semibold mb-1">Recevoir des notifications ?</h4>
+                        <p class="text-blue-200 text-sm mb-3">
+                            Soyez prévenu 1h avant et au moment du déverrouillage de votre capsule
+                        </p>
+                        <div class="flex gap-2">
+                            <button id="allow-notifications" class="btn btn-sm bg-blue-600 hover:bg-blue-700 text-white">
+                                Autoriser
+                            </button>
+                            <button id="deny-notifications" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white">
+                                Plus tard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Insert alert before the main card
+        this.container.insertAdjacentHTML('beforebegin', alertHtml);
+
+        // Attach event listeners
+        document.getElementById('allow-notifications')?.addEventListener('click', async () => {
+            const permission = await Notification.requestPermission();
+            localStorage.setItem('notificationPreference', permission);
+            document.getElementById('notification-alert')?.remove();
+
+            if (permission === 'granted') {
+                this.scheduleNotifications();
+            }
+        });
+
+        document.getElementById('deny-notifications')?.addEventListener('click', () => {
+            localStorage.setItem('notificationPreference', 'later');
+            document.getElementById('notification-alert')?.remove();
+        });
     }
 
     /**
@@ -157,7 +225,7 @@ export default class CapsuleManager {
         const formattedDate = this.formatDate(unlockDate);
 
         this.container.innerHTML = `
-            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple animate-fade-in-up">
+            <div class="card backdrop-blur-xl bg-white/10 border-white/30 shadow-purple animate-fade-in-up" data-unlock-date="${data.unlockDate}">
                 <div class="card-header">
                     <div class="flex items-center justify-between">
                         <h2 class="card-title text-white">Capsule verrouillée</h2>
@@ -217,6 +285,14 @@ export default class CapsuleManager {
         });
 
         this.startCountdown(unlockDate, createdAt);
+
+        // Check and request notification permission
+        this.checkNotificationPermission();
+
+        // Schedule notifications if permission granted
+        if (Notification.permission === 'granted') {
+            this.scheduleNotifications();
+        }
     }
 
     /**
@@ -275,22 +351,54 @@ export default class CapsuleManager {
 
         // Event listener for copying message
         document.getElementById('copy-message-btn')?.addEventListener('click', async () => {
+            const btn = document.getElementById('copy-message-btn');
+            if (!btn || btn.disabled) return;
+
+            const originalText = btn.textContent;
+
+            // Disable button to prevent spam
+            btn.disabled = true;
+
             try {
-                await navigator.clipboard.writeText(data.message);
+                // Try modern Clipboard API first
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(data.message);
+                } else {
+                    // Fallback to execCommand for older browsers
+                    const textarea = document.createElement('textarea');
+                    textarea.value = data.message;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+
+                    const success = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+
+                    if (!success) {
+                        throw new Error('execCommand failed');
+                    }
+                }
 
                 // Visual feedback: change button text temporarily
-                const btn = document.getElementById('copy-message-btn');
-                const originalText = btn.textContent;
                 btn.textContent = '✅ Copié !';
                 btn.classList.add('bg-green-500/20', 'border-green-400/30');
 
                 setTimeout(() => {
                     btn.textContent = originalText;
                     btn.classList.remove('bg-green-500/20', 'border-green-400/30');
+                    btn.disabled = false;
                 }, 2000);
             } catch (error) {
-                console.error('Failed to copy:', error);
-                alert('Impossible de copier le message');
+                console.error('Copy failed:', error);
+                btn.textContent = '❌ Erreur';
+                btn.classList.add('bg-red-500/20', 'border-red-400/30');
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-red-500/20', 'border-red-400/30');
+                    btn.disabled = false;
+                }, 2000);
             }
         });
 
@@ -926,6 +1034,89 @@ export default class CapsuleManager {
             // Fallback: reload page
             location.reload();
         }
+    }
+
+    /**
+     * Schedule notifications for locked capsule
+     */
+    scheduleNotifications() {
+        if (!this.notificationsSupported || Notification.permission !== 'granted') return;
+        if (this.currentState !== 'locked') return;
+
+        // Clear any existing timeouts
+        this.clearNotificationTimeouts();
+
+        // Get unlock date from current locked capsule
+        const unlockDateElement = document.querySelector('[data-unlock-date]');
+        if (!unlockDateElement) return;
+
+        const unlockDate = new Date(unlockDateElement.dataset.unlockDate);
+        const now = new Date();
+        const timeUntilUnlock = unlockDate - now;
+
+        // Schedule notification 1 hour before (if more than 1h remaining)
+        const oneHourBefore = timeUntilUnlock - (60 * 60 * 1000);
+        if (oneHourBefore > 0) {
+            const timeout1h = setTimeout(() => {
+                this.sendNotification(
+                    '🕰️ Capsule bientôt déverrouillée !',
+                    'Votre capsule temporelle sera accessible dans 1 heure',
+                    false
+                );
+            }, oneHourBefore);
+            this.notificationTimeouts.push(timeout1h);
+        }
+
+        // Schedule notification at exact unlock time
+        if (timeUntilUnlock > 0) {
+            const timeoutUnlock = setTimeout(() => {
+                this.sendNotification(
+                    '🎉 Capsule déverrouillée !',
+                    'Votre message du passé est maintenant accessible',
+                    true
+                );
+                // Recheck status to update UI
+                this.checkCapsuleStatus();
+            }, timeUntilUnlock);
+            this.notificationTimeouts.push(timeoutUnlock);
+        }
+    }
+
+    /**
+     * Send browser notification
+     * @param {string} title - Notification title
+     * @param {string} body - Notification body
+     * @param {boolean} requireInteraction - Whether notification requires interaction
+     */
+    sendNotification(title, body, requireInteraction = false) {
+        if (!this.notificationsSupported || Notification.permission !== 'granted') return;
+
+        try {
+            const notification = new Notification(title, {
+                body,
+                icon: '/favicon.ico',
+                badge: '/favicon.ico',
+                requireInteraction,
+                tag: 'capsule-temporelle',
+                renotify: true
+            });
+
+            // Click handler to focus window
+            notification.onclick = () => {
+                window.focus();
+                notification.close();
+            };
+        } catch (error) {
+            console.error('Failed to send notification:', error);
+        }
+    }
+
+    /**
+     * Clear all scheduled notification timeouts
+     */
+    clearNotificationTimeouts() {
+        this.notificationTimeouts.forEach(timeout => clearTimeout(timeout));
+        this.notificationTimeouts = [];
     }
 }
 

@@ -15,46 +15,49 @@
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-    <div class="w-full max-w-2xl">
-        {# Header avec titre #}
-        <div class="text-center mb-8">
-            <h1 class="text-5xl font-bold text-white mb-2">
-                <span id="hourglass-icon" class="inline-block transition-transform duration-700 hover:rotate-360">⌛</span>
-                Capsule Temporelle
-            </h1>
-            <p class="text-blue-200 text-lg">
-                Écrivez un message pour le futur
-            </p>
-        </div>
+<div class="h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col">
+    {# Contenu principal - flex-1 prend tout l'espace disponible #}
+    <div class="flex-1 flex items-center justify-center px-4">
+        <div class="w-full max-w-2xl">
+            {# Header avec titre #}
+            <div class="text-center mb-6">
+                <h1 class="text-4xl font-bold text-white mb-2">
+                    <span id="hourglass-icon" class="inline-block transition-transform duration-700 hover:rotate-360">⌛</span>
+                    Capsule Temporelle
+                </h1>
+                <p class="text-blue-200 text-base">
+                    Écrivez un message pour le futur
+                </p>
+            </div>
 
-        {# Container principal - géré dynamiquement par JavaScript #}
-        <div id="capsule-container">
-            {# Skeleton loader - état initial #}
-            <div class="card backdrop-blur-lg bg-white/10 border-white/20 animate-pulse">
-                <div class="card-header">
-                    <div class="h-8 bg-white/20 rounded w-3/4 mb-2"></div>
-                    <div class="h-4 bg-white/10 rounded w-1/2"></div>
-                </div>
-                <div class="card-content">
-                    <div class="space-y-3">
-                        <div class="h-4 bg-white/10 rounded"></div>
-                        <div class="h-4 bg-white/10 rounded w-5/6"></div>
-                        <div class="h-4 bg-white/10 rounded w-4/6"></div>
+            {# Container principal - géré dynamiquement par JavaScript #}
+            <div id="capsule-container">
+                {# Skeleton loader - état initial #}
+                <div class="card backdrop-blur-lg bg-white/10 border-white/20 animate-pulse">
+                    <div class="card-header">
+                        <div class="h-8 bg-white/20 rounded w-3/4 mb-2"></div>
+                        <div class="h-4 bg-white/10 rounded w-1/2"></div>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <div class="h-10 bg-white/20 rounded w-32"></div>
+                    <div class="card-content">
+                        <div class="space-y-3">
+                            <div class="h-4 bg-white/10 rounded"></div>
+                            <div class="h-4 bg-white/10 rounded w-5/6"></div>
+                            <div class="h-4 bg-white/10 rounded w-4/6"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="h-10 bg-white/20 rounded w-32"></div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        {# Footer #}
-        <div class="text-center mt-8">
-            <p class="text-blue-200/50 hover:text-blue-100 text-sm transition-colors">
-                Challenge <a href="https://devchallenges.yoandev.co/challenge/2026-week-01/" target="_blank" rel="noopener noreferrer" class="underline hover:text-white">DevChallenges</a> #2026-WEEK-01
-            </p>
-        </div>
     </div>
+
+    {# Footer en bas - flex-shrink-0 pour garder sa hauteur #}
+    <footer class="flex-shrink-0 backdrop-blur-sm bg-black/20 border-t border-white/10 py-3 px-4">
+        <p class="text-center text-white/50 hover:text-white/80 text-sm transition-colors">
+            🚀 Challenge <a href="https://devchallenges.yoandev.co/challenge/2026-week-01/" target="_blank" rel="noopener noreferrer" class="underline hover:text-white">DevChallenges</a> #2026-WEEK-01
+        </p>
+    </footer>
 </div>
 {% endblock %}
