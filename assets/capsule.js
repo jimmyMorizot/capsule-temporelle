@@ -1218,46 +1218,72 @@ export default class CapsuleManager {
     }
 
     /**
-     * Trigger electric sparks effect like flux capacitor
+     * Trigger electric sparks rain effect from both sides
      */
     triggerSparks() {
-        const sparkCount = 80; // Nombre d'étincelles
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
+        const duration = 3000; // 3 secondes de pluie d'étincelles
+        const end = Date.now() + duration;
+        const screenHeight = window.innerHeight;
 
-        for (let i = 0; i < sparkCount; i++) {
-            setTimeout(() => {
+        (function frame() {
+            // PLUIE MASSIVE depuis la GAUCHE - 20 étincelles par frame
+            for (let i = 0; i < 20; i++) {
                 const spark = document.createElement('div');
                 spark.className = 'spark';
 
-                // Position de départ au centre
-                spark.style.left = centerX + 'px';
-                spark.style.top = centerY + 'px';
+                // Position de départ à gauche
+                spark.style.left = '0px';
+                spark.style.top = (Math.random() * screenHeight) + 'px';
 
-                // Direction aléatoire (angle en radians)
-                const angle = Math.random() * Math.PI * 2;
-                const distance = 200 + Math.random() * 400; // Distance variable
+                // Direction vers la droite et bas (angle entre 0 et 90 degrés)
+                const angle = (Math.random() * Math.PI / 2) - Math.PI / 6; // -30° à 60°
+                const distance = 300 + Math.random() * 400;
                 const tx = Math.cos(angle) * distance;
                 const ty = Math.sin(angle) * distance;
 
-                // Variables CSS pour l'animation
                 spark.style.setProperty('--tx', tx + 'px');
                 spark.style.setProperty('--ty', ty + 'px');
 
-                // Durée variable pour plus de naturel
-                const duration = 0.8 + Math.random() * 0.6;
-                spark.style.animationDuration = duration + 's';
+                const sparkDuration = 0.8 + Math.random() * 0.6;
+                spark.style.animationDuration = sparkDuration + 's';
 
                 document.body.appendChild(spark);
 
-                // Cleanup après animation
-                setTimeout(() => {
-                    spark.remove();
-                }, duration * 1000);
-            }, i * 15); // Étincelles échelonnées
-        }
+                setTimeout(() => spark.remove(), sparkDuration * 1000);
+            }
 
-        console.log('⚡ Sparks effect triggered!');
+            // PLUIE MASSIVE depuis la DROITE - 20 étincelles par frame
+            for (let i = 0; i < 20; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+
+                // Position de départ à droite
+                spark.style.left = window.innerWidth + 'px';
+                spark.style.top = (Math.random() * screenHeight) + 'px';
+
+                // Direction vers la gauche et bas (angle entre 90 et 180 degrés)
+                const angle = Math.PI - (Math.random() * Math.PI / 2) + Math.PI / 6; // 120° à 210°
+                const distance = 300 + Math.random() * 400;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+
+                spark.style.setProperty('--tx', tx + 'px');
+                spark.style.setProperty('--ty', ty + 'px');
+
+                const sparkDuration = 0.8 + Math.random() * 0.6;
+                spark.style.animationDuration = sparkDuration + 's';
+
+                document.body.appendChild(spark);
+
+                setTimeout(() => spark.remove(), sparkDuration * 1000);
+            }
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+
+        console.log('⚡ Electric sparks rain triggered!');
     }
 
     /**
