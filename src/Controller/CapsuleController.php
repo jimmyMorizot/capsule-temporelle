@@ -115,4 +115,18 @@ final class CapsuleController extends AbstractController
             'createdAt' => $capsule['createdAt'],
         ], Response::HTTP_OK);
     }
+
+    /**
+     * Delete the current capsule
+     */
+    #[Route('', name: 'delete', methods: ['DELETE'])]
+    public function delete(): JsonResponse
+    {
+        $this->capsuleService->deleteCapsule();
+
+        return $this->json([
+            'status' => 'success',
+            'message' => 'Capsule supprimée avec succès',
+        ], Response::HTTP_OK);
+    }
 }

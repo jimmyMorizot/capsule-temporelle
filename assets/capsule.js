@@ -81,14 +81,15 @@ export default class CapsuleManager {
                             <textarea
                                 id="message"
                                 name="message"
-                                class="textarea bg-white/5 border-white/20 text-white placeholder-blue-200"
+                                class="textarea bg-white/5 border-white/20 text-white placeholder-blue-200 transition-colors duration-300"
                                 placeholder="Écrivez votre message pour le futur..."
                                 rows="6"
                                 maxlength="5000"
                                 required
                             ></textarea>
-                            <div class="flex justify-between text-xs text-blue-200">
-                                <span id="char-count">0 / 5000 caractères</span>
+                            <div class="flex justify-between text-xs">
+                                <span id="message-validation-status" class="text-blue-200"></span>
+                                <span id="char-count" class="text-green-400">0 / 5000 caractères</span>
                             </div>
                         </div>
 
@@ -96,13 +97,17 @@ export default class CapsuleManager {
                             <label for="unlockDate" class="label text-white">
                                 Date de déverrouillage
                             </label>
-                            <input
-                                type="datetime-local"
-                                id="unlockDate"
-                                name="unlockDate"
-                                class="input bg-white/5 border-white/20 text-white"
-                                required
-                            />
+                            <div class="relative">
+                                <input
+                                    type="datetime-local"
+                                    id="unlockDate"
+                                    name="unlockDate"
+                                    class="input bg-white/5 border-white/20 text-white transition-colors duration-300 pr-10"
+                                    required
+                                />
+                                <span id="date-validation-icon" class="absolute right-3 top-1/2 -translate-y-1/2 text-xl hidden"></span>
+                            </div>
+                            <p id="date-validation-message" class="text-sm hidden"></p>
 
                             <div class="grid grid-cols-2 gap-2 mt-2">
                                 <button type="button" data-quick-date="1d" class="btn btn-outline btn-sm bg-white/5 border-white/20 text-white hover:bg-white/10">
@@ -172,8 +177,10 @@ export default class CapsuleManager {
                             </svg>
                             Temps restant
                         </div>
-                        <div id="countdown" class="text-3xl font-bold text-white mt-4 font-mono">
+                        <div id="countdown" class="text-3xl font-bold text-white mt-4 font-mono transition-all duration-300">
                             Calcul...
+                        </div>
+                        <div id="exact-date" class="text-sm text-white/60 mt-2 hidden transition-opacity duration-300">
                         </div>
                         ${createdAt ? `
                         <div class="mt-4">
@@ -193,8 +200,21 @@ export default class CapsuleManager {
                         </p>
                     </div>
                 </div>
+                <div class="card-footer">
+                    <button
+                        id="delete-capsule-btn"
+                        class="btn btn-outline btn-sm bg-red-500/10 border-red-400/30 text-red-300 hover:bg-red-500/20"
+                    >
+                        🗑️ Supprimer la capsule
+                    </button>
+                </div>
             </div>
         `;
+
+        // Event listener for delete button
+        document.getElementById('delete-capsule-btn')?.addEventListener('click', () => {
+            this.deleteCapsule();
+        });
 
         this.startCountdown(unlockDate, createdAt);
     }
@@ -374,8 +394,11 @@ export default class CapsuleManager {
             });
         });
 
-        // Real-time validation on date change
+        // Real-time validation on date change/input
         unlockDateInput?.addEventListener('change', () => {
+            this.validateForm();
+        });
+        unlockDateInput?.addEventListener('input', () => {
             this.validateForm();
         });
 
@@ -398,59 +421,137 @@ export default class CapsuleManager {
         const messageInput = document.getElementById('message');
         const unlockDateInput = document.getElementById('unlockDate');
         const submitButton = document.querySelector('#capsule-form button[type="submit"]');
-        const formError = document.getElementById('form-error');
 
         let isValid = true;
-        let errorMessage = '';
 
         // Validate message
-        const message = messageInput?.value.trim() || '';
-        if (message.length === 0) {
+        const messageValid = this.validateMessageInput(messageInput);
+        if (!messageValid) {
             isValid = false;
         }
 
         // Validate date
-        if (unlockDateInput?.value) {
-            const selectedDate = new Date(unlockDateInput.value);
-            const now = new Date();
-
-            if (selectedDate <= now) {
-                isValid = false;
-                errorMessage = 'La date de déverrouillage doit être dans le futur';
-                unlockDateInput.classList.add('border-red-500');
-                unlockDateInput.classList.remove('border-white/20');
-            } else {
-                unlockDateInput.classList.remove('border-red-500');
-                unlockDateInput.classList.add('border-white/20');
-            }
-        } else {
+        const dateValid = this.validateDateInput(unlockDateInput);
+        if (!dateValid) {
             isValid = false;
         }
 
-        // Show/hide error message
-        if (errorMessage) {
-            formError.className = 'alert alert-destructive bg-red-500/10 border-red-400/30';
-            formError.innerHTML = `
-                <div class="alert-title text-red-200 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    ${errorMessage}
-                </div>
-            `;
-        } else {
-            formError.className = 'hidden';
-        }
-
-        // Enable/disable submit button
+        // Enable/disable submit button with tooltip
         if (submitButton) {
             submitButton.disabled = !isValid;
             if (!isValid) {
                 submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+                submitButton.setAttribute('title', 'Veuillez remplir tous les champs correctement');
             } else {
                 submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                submitButton.removeAttribute('title');
             }
         }
+    }
+
+    /**
+     * Validate message input with visual feedback
+     */
+    validateMessageInput(messageInput) {
+        if (!messageInput) return false;
+
+        const message = messageInput.value.trim();
+        const messageStatus = document.getElementById('message-validation-status');
+
+        let isValid = true;
+
+        if (message.length === 0) {
+            // Empty message
+            isValid = false;
+            messageInput.classList.remove('border-green-500', 'border-white/20');
+            messageInput.classList.add('border-red-500');
+            if (messageStatus) {
+                messageStatus.textContent = '';
+                messageStatus.className = 'text-sm';
+            }
+        } else if (message.length > 5000) {
+            // Too long
+            isValid = false;
+            messageInput.classList.remove('border-green-500', 'border-white/20');
+            messageInput.classList.add('border-red-500');
+            if (messageStatus) {
+                messageStatus.textContent = '❌ Message trop long';
+                messageStatus.className = 'text-sm text-red-400';
+            }
+        } else {
+            // Valid
+            messageInput.classList.remove('border-red-500', 'border-white/20');
+            messageInput.classList.add('border-green-500');
+            if (messageStatus) {
+                messageStatus.textContent = '✓ Message valide';
+                messageStatus.className = 'text-sm text-green-400';
+            }
+        }
+
+        return isValid;
+    }
+
+    /**
+     * Validate date input with visual feedback
+     */
+    validateDateInput(unlockDateInput) {
+        if (!unlockDateInput) return false;
+
+        const dateIcon = document.getElementById('date-validation-icon');
+        const dateMessage = document.getElementById('date-validation-message');
+
+        let isValid = true;
+
+        if (!unlockDateInput.value) {
+            // No date selected
+            isValid = false;
+            unlockDateInput.classList.remove('border-green-500', 'border-red-500');
+            unlockDateInput.classList.add('border-white/20');
+            if (dateIcon) {
+                dateIcon.classList.add('hidden');
+            }
+            if (dateMessage) {
+                dateMessage.classList.add('hidden');
+            }
+        } else {
+            const selectedDate = new Date(unlockDateInput.value);
+            const now = new Date();
+
+            if (selectedDate <= now) {
+                // Date in the past
+                isValid = false;
+                unlockDateInput.classList.remove('border-green-500', 'border-white/20');
+                unlockDateInput.classList.add('border-red-500');
+
+                if (dateIcon) {
+                    dateIcon.textContent = '❌';
+                    dateIcon.classList.remove('hidden');
+                }
+
+                if (dateMessage) {
+                    dateMessage.textContent = 'La date doit être dans le futur';
+                    dateMessage.className = 'text-sm text-red-400';
+                    dateMessage.classList.remove('hidden');
+                }
+            } else {
+                // Valid date
+                unlockDateInput.classList.remove('border-red-500', 'border-white/20');
+                unlockDateInput.classList.add('border-green-500');
+
+                if (dateIcon) {
+                    dateIcon.textContent = '✓';
+                    dateIcon.classList.remove('hidden');
+                }
+
+                if (dateMessage) {
+                    dateMessage.textContent = 'Date valide ✓';
+                    dateMessage.className = 'text-sm text-green-400';
+                    dateMessage.classList.remove('hidden');
+                }
+            }
+        }
+
+        return isValid;
     }
 
     /**
@@ -567,18 +668,33 @@ export default class CapsuleManager {
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            const newCountdown = this.formatCountdownSmart(days, hours, minutes, seconds);
+            const countdownData = this.formatCountdownSmart(days, hours, minutes, seconds);
             const countdownEl = document.getElementById('countdown');
+            const exactDateEl = document.getElementById('exact-date');
 
             if (countdownEl) {
-                countdownEl.textContent = newCountdown;
-
-                // Add red color if less than 1 hour (no animation at all)
-                const totalMinutes = hours * 60 + minutes;
-                if (totalMinutes < 60 && days === 0) {
-                    countdownEl.style.color = '#ef4444'; // red-500
+                // Fade out, update, fade in for smooth transition
+                const oldText = countdownEl.textContent;
+                if (oldText !== countdownData.text) {
+                    countdownEl.style.opacity = '0';
+                    setTimeout(() => {
+                        countdownEl.textContent = countdownData.text;
+                        countdownEl.className = `text-3xl font-bold mt-4 font-mono transition-all duration-300 ${countdownData.color}`;
+                        countdownEl.style.opacity = '1';
+                    }, 150);
                 } else {
-                    countdownEl.style.color = ''; // reset to default
+                    countdownEl.textContent = countdownData.text;
+                    countdownEl.className = `text-3xl font-bold mt-4 font-mono transition-all duration-300 ${countdownData.color}`;
+                }
+            }
+
+            // Show/hide exact date
+            if (exactDateEl) {
+                if (countdownData.showExactDate) {
+                    exactDateEl.textContent = this.formatExactDate(unlockDate);
+                    exactDateEl.classList.remove('hidden');
+                } else {
+                    exactDateEl.classList.add('hidden');
                 }
             }
 
@@ -633,25 +749,71 @@ export default class CapsuleManager {
 
     /**
      * Format countdown with intelligent formatting based on time remaining
+     * Returns object with text, color, and whether to show exact date
      */
     formatCountdownSmart(days, hours, minutes, seconds) {
-        // Less than 1 hour: show minutes and seconds
+        const totalMinutes = days * 24 * 60 + hours * 60 + minutes;
+
+        // < 5 minutes: URGENT (no pulse animation - too annoying)
+        if (totalMinutes < 5) {
+            return {
+                text: `BIENTÔT ! ${minutes}m ${seconds}s`,
+                color: 'text-red-500',
+                showExactDate: false
+            };
+        }
+
+        // < 1 hour: show minutes and seconds
         if (days === 0 && hours === 0) {
-            return `${minutes} minute${minutes > 1 ? 's' : ''} ${seconds} seconde${seconds > 1 ? 's' : ''}`;
+            return {
+                text: `${minutes} minute${minutes > 1 ? 's' : ''} ${seconds} seconde${seconds > 1 ? 's' : ''}`,
+                color: 'text-orange-500',
+                showExactDate: false
+            };
         }
 
-        // Less than 24 hours: show hours and minutes
+        // < 24 hours: show hours, minutes, seconds
         if (days === 0) {
-            return `${hours} heure${hours > 1 ? 's' : ''} ${minutes} minute${minutes > 1 ? 's' : ''}`;
+            return {
+                text: `${hours} heure${hours > 1 ? 's' : ''} ${minutes} minute${minutes > 1 ? 's' : ''} ${seconds} seconde${seconds > 1 ? 's' : ''}`,
+                color: 'text-yellow-400',
+                showExactDate: false
+            };
         }
 
-        // More than 7 days: show days and hours only
+        // > 7 days: show days and hours + exact date below
         if (days > 7) {
-            return `${days} jour${days > 1 ? 's' : ''} ${hours} heure${hours > 1 ? 's' : ''}`;
+            return {
+                text: `${days} jour${days > 1 ? 's' : ''} ${hours} heure${hours > 1 ? 's' : ''}`,
+                color: 'text-blue-400',
+                showExactDate: true
+            };
         }
 
-        // Between 1-7 days: show all (compact format)
-        return `${days}j ${hours}h ${minutes}m ${seconds}s`;
+        // 1-7 days: compact format
+        return {
+            text: `${days}j ${hours}h ${minutes}m`,
+            color: 'text-purple-400',
+            showExactDate: false
+        };
+    }
+
+    /**
+     * Format exact date in French locale
+     */
+    formatExactDate(unlockDate) {
+        const formatter = new Intl.DateTimeFormat('fr-FR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const formatted = formatter.format(unlockDate);
+        // Capitalize first letter
+        return formatted.charAt(0).toUpperCase() + formatted.slice(1);
     }
 
     /**
@@ -725,6 +887,45 @@ export default class CapsuleManager {
                 requestAnimationFrame(frame);
             }
         }());
+    }
+
+    /**
+     * Delete current capsule with confirmation
+     */
+    async deleteCapsule() {
+        // Ask for confirmation
+        const confirmed = confirm(
+            '⚠️ Êtes-vous sûr de vouloir supprimer cette capsule ?\n\n' +
+            'Cette action est irréversible et vous perdrez votre message.'
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            // Delete via API (DELETE method)
+            const response = await fetch(this.apiUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                signal: AbortSignal.timeout(5000)
+            });
+
+            if (response.ok) {
+                // Success - show creation form
+                this.renderCreateForm();
+            } else {
+                // Fallback: try manual file deletion via backend
+                // If DELETE endpoint doesn't exist, just reload
+                location.reload();
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            // Fallback: reload page
+            location.reload();
+        }
     }
 }
 

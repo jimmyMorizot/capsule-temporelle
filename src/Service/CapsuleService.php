@@ -118,6 +118,20 @@ final class CapsuleService
     }
 
     /**
+     * Delete the current capsule
+     */
+    public function deleteCapsule(): void
+    {
+        $filePath = $this->getFilePath();
+
+        if (file_exists($filePath)) {
+            if (!unlink($filePath)) {
+                throw new RuntimeException('Failed to delete capsule file');
+            }
+        }
+    }
+
+    /**
      * Get full file path to capsule.json
      */
     private function getFilePath(): string
