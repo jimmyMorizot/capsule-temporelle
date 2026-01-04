@@ -414,6 +414,9 @@ export default class CapsuleManager {
         // Format dates DeLorean
         const unlockDateData = this.formatDateDeLorean(unlockedDate);
 
+        // Check for Easter egg dates
+        this.checkEasterEgg(unlockedDate);
+
         // Trigger spectacular unlock animation "88 MPH"!
         this.triggerUnlockAnimation();
 
@@ -1209,7 +1212,12 @@ export default class CapsuleManager {
             this.triggerSparks();
         }, 500);
 
-        // 5. Cleanup flash overlay
+        // 5. Animation "88 MPH" text flash
+        setTimeout(() => {
+            this.show88MPHText();
+        }, 200);
+
+        // 6. Cleanup flash overlay
         setTimeout(() => {
             flashOverlay.remove();
         }, 1000);
@@ -1284,6 +1292,78 @@ export default class CapsuleManager {
         }());
 
         console.log('⚡ Electric sparks rain triggered!');
+    }
+
+    /**
+     * Check for Easter egg dates and display special message
+     * @param {Date} unlockDate - The unlock date to check
+     */
+    checkEasterEgg(unlockDate) {
+        const d = new Date(unlockDate);
+        const month = d.getMonth() + 1; // 0-indexed
+        const day = d.getDate();
+        const year = d.getFullYear();
+
+        // Dates iconiques du film "Retour vers le Futur"
+        const iconicDates = [
+            { m: 10, d: 26, y: 1985, msg: '⚡ Great Scott! Retour à Hill Valley 1985!', icon: '🚗' },
+            { m: 10, d: 21, y: 2015, msg: '🚗 Bienvenue dans le futur! 2015!', icon: '🛹' },
+            { m: 11, d: 5, y: 1955, msg: '🕰️ Premier voyage temporel! 1955!', icon: '⚡' },
+            { m: 11, d: 12, y: 1955, msg: '⏰ Le bal "Enchantment Under the Sea"!', icon: '💃' },
+            { m: 9, d: 2, y: 1885, msg: '🤠 Bienvenue dans le Far West! 1885!', icon: '🐴' }
+        ];
+
+        for (const iconic of iconicDates) {
+            if (month === iconic.m && day === iconic.d) {
+                // Match found! Show special message
+                this.showEasterEggMessage(iconic.msg, iconic.icon);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Display Easter egg special message overlay
+     */
+    showEasterEggMessage(message, icon) {
+        const overlay = document.createElement('div');
+        overlay.className = 'easter-egg-overlay';
+        overlay.innerHTML = `
+            <div class="easter-egg-content">
+                <div class="easter-egg-icon">${icon}</div>
+                <div class="easter-egg-text">${message}</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        // Auto-remove after 4 seconds
+        setTimeout(() => {
+            overlay.classList.add('fade-out');
+            setTimeout(() => overlay.remove(), 500);
+        }, 4000);
+
+        console.log(`🎬 Easter Egg: ${message}`);
+    }
+
+    /**
+     * Show "88 MPH" text flash animation
+     */
+    show88MPHText() {
+        const mph88 = document.createElement('div');
+        mph88.className = 'mph88-overlay';
+        mph88.innerHTML = `
+            <div class="mph88-text">88 MPH</div>
+        `;
+        document.body.appendChild(mph88);
+
+        // Auto-remove after 1.5 seconds
+        setTimeout(() => {
+            mph88.classList.add('fade-out');
+            setTimeout(() => mph88.remove(), 500);
+        }, 1500);
+
+        console.log('🚗💨 88 MPH!');
     }
 
     /**

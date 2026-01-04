@@ -703,4 +703,147 @@
     z-index: 9997;
     animation: sparkFly 1s ease-out forwards;
   }
+
+  /* ===== Easter Egg Overlay ===== */
+  .easter-egg-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 10000;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .easter-egg-overlay.fade-out {
+    animation: fadeOut 0.5s ease forwards;
+  }
+
+  .easter-egg-content {
+    text-align: center;
+    animation: scaleIn 0.5s ease;
+  }
+
+  .easter-egg-icon {
+    font-size: 8rem;
+    margin-bottom: 1rem;
+    animation: bounce 1s ease infinite;
+  }
+
+  .easter-egg-text {
+    font-family: 'LED7Segment', 'Courier New', monospace;
+    font-size: 2rem;
+    color: #FFD700;
+    text-shadow: 0 0 20px #FFB800, 0 0 40px #FF8800;
+    animation: glow 1s ease-in-out infinite alternate;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes scaleIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  @keyframes glow {
+    from { text-shadow: 0 0 20px #FFD700, 0 0 40px #FFB800; }
+    to { text-shadow: 0 0 30px #FFD700, 0 0 60px #FFB800, 0 0 80px #FF8800; }
+  }
+
+  /* ===== 88 MPH Text Flash Animation ===== */
+  .mph88-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    z-index: 9998;
+    pointer-events: none;
+    animation: flashBackground 0.3s ease;
+  }
+
+  .mph88-overlay.fade-out {
+    animation: fadeOut 0.5s ease forwards;
+  }
+
+  .mph88-text {
+    font-family: 'LED7Segment', 'Courier New', monospace;
+    font-size: 10rem;
+    font-weight: bold;
+    color: #FF0000;
+    text-shadow:
+      0 0 20px #FF0000,
+      0 0 40px #FF0000,
+      0 0 60px #FF4500,
+      0 0 80px #FF4500,
+      0 0 100px #FFD700;
+    animation: mph88Flash 1.5s ease-out forwards;
+  }
+
+  @keyframes flashBackground {
+    0% { background: rgba(255, 255, 255, 0.8); }
+    100% { background: transparent; }
+  }
+
+  @keyframes mph88Flash {
+    0% {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    20% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+    40% {
+      transform: scale(1);
+      color: #00FF00;
+      text-shadow:
+        0 0 20px #00FF00,
+        0 0 40px #00FF00,
+        0 0 60px #00FF00;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+
+  /* ===== Animation Glitch Digital ===== */
+  @keyframes glitch {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-2px, -2px); }
+    80% { transform: translate(2px, 2px); }
+  }
+
+  .glitch {
+    animation: glitch 0.3s ease-in-out 3;
+  }
+
+  /* Glitch effect for LED text */
+  .led-glitch {
+    animation: glitch 0.2s ease-in-out 5,
+               ledGlitchColor 0.1s ease-in-out 10;
+  }
+
+  @keyframes ledGlitchColor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
 }
