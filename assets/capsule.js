@@ -414,8 +414,8 @@ export default class CapsuleManager {
         // Format dates DeLorean
         const unlockDateData = this.formatDateDeLorean(unlockedDate);
 
-        // Trigger confetti celebration!
-        this.triggerConfetti();
+        // Trigger spectacular unlock animation "88 MPH"!
+        this.triggerUnlockAnimation();
 
         this.container.innerHTML = `
             <div class="bg-brushed-metal p-6 animate-fade-in-up max-w-4xl mx-auto">
@@ -432,7 +432,7 @@ export default class CapsuleManager {
                             <span class="label-present inline-block text-xs">JOUR</span>
                         </div>
                         <div class="led-box">
-                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.jour}</div>
+                            <div class="text-3xl md:text-5xl font-led led-red led-transition unlock-led-jour">${unlockDateData.jour}</div>
                         </div>
                     </div>
 
@@ -442,7 +442,7 @@ export default class CapsuleManager {
                             <span class="label-present inline-block text-xs">MOIS</span>
                         </div>
                         <div class="led-box">
-                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.mois}</div>
+                            <div class="text-3xl md:text-5xl font-led led-red led-transition unlock-led-mois">${unlockDateData.mois}</div>
                         </div>
                     </div>
 
@@ -452,7 +452,7 @@ export default class CapsuleManager {
                             <span class="label-present inline-block text-xs">ANNEE</span>
                         </div>
                         <div class="led-box">
-                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.annee}</div>
+                            <div class="text-3xl md:text-5xl font-led led-red led-transition unlock-led-annee">${unlockDateData.annee}</div>
                         </div>
                     </div>
                 </div>
@@ -465,7 +465,7 @@ export default class CapsuleManager {
                             <span class="label-present inline-block text-xs">HEURE</span>
                         </div>
                         <div class="led-box">
-                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.heure}</div>
+                            <div class="text-3xl md:text-5xl font-led led-red led-transition unlock-led-heure">${unlockDateData.heure}</div>
                         </div>
                     </div>
 
@@ -475,7 +475,7 @@ export default class CapsuleManager {
                             <span class="label-present inline-block text-xs">MIN</span>
                         </div>
                         <div class="led-box">
-                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.min}</div>
+                            <div class="text-3xl md:text-5xl font-led led-red led-transition unlock-led-min">${unlockDateData.min}</div>
                         </div>
                     </div>
 
@@ -485,7 +485,7 @@ export default class CapsuleManager {
                             <span class="label-present inline-block text-xs">SEC</span>
                         </div>
                         <div class="led-box">
-                            <div class="text-3xl md:text-5xl font-led led-green">${unlockDateData.sec}</div>
+                            <div class="text-3xl md:text-5xl font-led led-red led-transition unlock-led-sec">${unlockDateData.sec}</div>
                         </div>
                     </div>
                 </div>
@@ -1169,26 +1169,119 @@ export default class CapsuleManager {
     }
 
     /**
-     * Trigger confetti celebration animation
+     * Trigger spectacular unlock animation "88 MPH" DeLorean style
+     */
+    triggerUnlockAnimation() {
+        // 1. Flash blanc éclatant
+        const flashOverlay = document.createElement('div');
+        flashOverlay.className = 'flash-overlay';
+        document.body.appendChild(flashOverlay);
+
+        // 2. Effet flux capacitor - 4 lignes lumineuses échelonnées
+        const fluxDelays = [0, 200, 400, 600];
+        const fluxElements = [];
+
+        fluxDelays.forEach((delay, index) => {
+            setTimeout(() => {
+                const fluxLine = document.createElement('div');
+                fluxLine.className = 'flux-lines animate';
+                document.body.appendChild(fluxLine);
+                fluxElements.push(fluxLine);
+
+                // Cleanup after animation
+                setTimeout(() => {
+                    fluxLine.remove();
+                }, 1500);
+            }, delay);
+        });
+
+        // 3. Transition LED rouge → vert progressive (après flash)
+        setTimeout(() => {
+            const ledElements = document.querySelectorAll('.unlock-led-jour, .unlock-led-mois, .unlock-led-annee, .unlock-led-heure, .unlock-led-min, .unlock-led-sec');
+            ledElements.forEach(led => {
+                led.classList.remove('led-red');
+                led.classList.add('led-green');
+            });
+        }, 800);
+
+        // 4. Étincelles électriques style flux capacitor
+        setTimeout(() => {
+            this.triggerSparks();
+        }, 500);
+
+        // 5. Cleanup flash overlay
+        setTimeout(() => {
+            flashOverlay.remove();
+        }, 1000);
+
+        console.log('🚗💨 88 MPH! Unlock animation triggered');
+    }
+
+    /**
+     * Trigger electric sparks effect like flux capacitor
+     */
+    triggerSparks() {
+        const sparkCount = 80; // Nombre d'étincelles
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        for (let i = 0; i < sparkCount; i++) {
+            setTimeout(() => {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+
+                // Position de départ au centre
+                spark.style.left = centerX + 'px';
+                spark.style.top = centerY + 'px';
+
+                // Direction aléatoire (angle en radians)
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 200 + Math.random() * 400; // Distance variable
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+
+                // Variables CSS pour l'animation
+                spark.style.setProperty('--tx', tx + 'px');
+                spark.style.setProperty('--ty', ty + 'px');
+
+                // Durée variable pour plus de naturel
+                const duration = 0.8 + Math.random() * 0.6;
+                spark.style.animationDuration = duration + 's';
+
+                document.body.appendChild(spark);
+
+                // Cleanup après animation
+                setTimeout(() => {
+                    spark.remove();
+                }, duration * 1000);
+            }, i * 15); // Étincelles échelonnées
+        }
+
+        console.log('⚡ Sparks effect triggered!');
+    }
+
+    /**
+     * Trigger confetti celebration with DeLorean colors (kept for backward compatibility)
      */
     triggerConfetti() {
         const duration = 3000; // 3 seconds
         const end = Date.now() + duration;
 
-        const colors = ['#a855f7', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
+        // Couleurs DeLorean: rouge, vert, jaune/ambre
+        const colors = ['#FF0000', '#00FF00', '#FFB800', '#FF8800', '#00FFFF'];
 
         (function frame() {
             confetti({
-                particleCount: 3,
+                particleCount: 5,
                 angle: 60,
-                spread: 55,
+                spread: 70,
                 origin: { x: 0 },
                 colors: colors
             });
             confetti({
-                particleCount: 3,
+                particleCount: 5,
                 angle: 120,
-                spread: 55,
+                spread: 70,
                 origin: { x: 1 },
                 colors: colors
             });

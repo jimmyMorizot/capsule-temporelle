@@ -620,4 +620,87 @@
       padding: 3px;
     }
   }
+
+  /* ===== Animations Déverrouillage "88 MPH" DeLorean ===== */
+
+  /* Flash blanc éclatant fullscreen */
+  @keyframes flashWhite {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .flash-overlay {
+    position: fixed;
+    inset: 0;
+    background: white;
+    z-index: 9999;
+    pointer-events: none;
+    animation: flashWhite 1s ease-out;
+  }
+
+  /* Effet flux capacitor - lignes lumineuses depuis centre */
+  @keyframes fluxLines {
+    0% {
+      width: 0;
+      height: 0;
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+    100% {
+      width: 100vw;
+      height: 100vh;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  .flux-lines {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    border: 3px solid #00FFFF;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  .flux-lines.animate {
+    animation: fluxLines 1.5s ease-out;
+  }
+
+  /* Transition LED rouge → vert progressive */
+  .led-transition {
+    transition: color 2s ease, text-shadow 2s ease !important;
+  }
+
+  /* Étincelles électriques style flux capacitor */
+  @keyframes sparkFly {
+    0% {
+      transform: translate(-50%, -50%) translate(0, 0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0);
+      opacity: 0;
+    }
+  }
+
+  .spark {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #FFD700, #FFA500, #FF4500);
+    box-shadow: 0 0 10px #FFD700, 0 0 20px #FFA500;
+    pointer-events: none;
+    z-index: 9997;
+    animation: sparkFly 1s ease-out forwards;
+  }
 }
