@@ -846,4 +846,128 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
   }
+
+  /* ===== Condensateur de Flux - Flux Capacitor ===== */
+  .flux-capacitor {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+  }
+
+  /* Centre du condensateur */
+  .flux-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #fff 0%, #00FFFF 40%, #0088FF 100%);
+    border-radius: 50%;
+    box-shadow:
+      0 0 10px #00FFFF,
+      0 0 20px #00FFFF,
+      0 0 30px #0088FF,
+      0 0 40px #0088FF;
+    animation: fluxCenterPulse 1s ease-in-out infinite;
+  }
+
+  /* Branches du Y */
+  .flux-branch {
+    position: absolute;
+    width: 6px;
+    background: linear-gradient(to top, #00FFFF, #FFFFFF);
+    border-radius: 3px;
+    box-shadow:
+      0 0 8px #00FFFF,
+      0 0 15px #00FFFF;
+  }
+
+  /* Branche du haut */
+  .flux-branch-top {
+    height: 25px;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: fluxBranchGlow 1.5s ease-in-out infinite;
+  }
+
+  /* Branche gauche (bas-gauche) */
+  .flux-branch-left {
+    height: 25px;
+    bottom: 5px;
+    left: 10px;
+    transform: rotate(45deg);
+    transform-origin: top center;
+    animation: fluxBranchGlow 1.5s ease-in-out infinite 0.5s;
+  }
+
+  /* Branche droite (bas-droite) */
+  .flux-branch-right {
+    height: 25px;
+    bottom: 5px;
+    right: 10px;
+    transform: rotate(-45deg);
+    transform-origin: top center;
+    animation: fluxBranchGlow 1.5s ease-in-out infinite 1s;
+  }
+
+  /* Glow global */
+  .flux-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: fluxGlowPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes fluxCenterPulse {
+    0%, 100% {
+      box-shadow:
+        0 0 10px #00FFFF,
+        0 0 20px #00FFFF,
+        0 0 30px #0088FF;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      box-shadow:
+        0 0 15px #FFFFFF,
+        0 0 30px #00FFFF,
+        0 0 45px #00FFFF,
+        0 0 60px #0088FF;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+  }
+
+  @keyframes fluxBranchGlow {
+    0%, 100% {
+      opacity: 0.6;
+      box-shadow:
+        0 0 5px #00FFFF,
+        0 0 10px #00FFFF;
+    }
+    50% {
+      opacity: 1;
+      box-shadow:
+        0 0 10px #FFFFFF,
+        0 0 20px #00FFFF,
+        0 0 30px #00FFFF;
+    }
+  }
+
+  @keyframes fluxGlowPulse {
+    0%, 100% {
+      opacity: 0.3;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+  }
 }
